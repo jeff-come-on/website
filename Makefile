@@ -3,7 +3,7 @@
 
 
 all: gen-env up down debug shell setup serve emulate test debug-tests \
-		 stop-tests build-image build build-image-and-check-links debug-build \ 
+		 stop-tests build-image build build-image-and-check-links debug-build \
 		 deploy stage-channel stage-local clean reinstall purge
 
 .DEFAULT_GOAL := up
@@ -25,10 +25,10 @@ STAGE_NAME ?= docs
 
 # Generate .env file with defaults
 # The .env file is used to store local secrets and settings
-# NOTE that using a `FIREBASE_TOKEN` is optional and not required. 
-# If you have generated a token via `firebase login:ci` and it is 
-# set in your `.env` file, it will be used for deployment. Otherwise, 
-# the command will use the manual setup described above. 
+# NOTE that using a `FIREBASE_TOKEN` is optional and not required.
+# If you have generated a token via `firebase login:ci` and it is
+# set in your `.env` file, it will be used for deployment. Otherwise,
+# the command will use the manual setup described above.
 # Usage: `make genenv`
 .env:
 	touch $@
@@ -36,9 +36,9 @@ genenv: .env
 	@echo "FLUTTER_BUILD_BRANCH=stable" >> $<
 	@echo "FIREBASE_ALIAS=default" >> $<
 	@echo "FIREBASE_TOKEN=" >> $<
-	
 
-# Start the dev container and serve the Jekyll site. If the 
+
+# Start the dev container and serve the Jekyll site. If the
 # site is not yet built, this will run build automatically
 up:
 	docker-compose up site
@@ -56,13 +56,14 @@ shell:
 	docker-compose exec site bash
 
 # Build the dev container from scratch.
-# Runs packages installs a second time for both Gems and NPM to 
+# Runs packages installs a second time for both Gems and NPM to
 # overcome inconsistent bugs with missing packages at runtime.
 setup:
 	make clean
 	docker-compose build --no-cache site
 	docker-compose run --rm site npm install
 	docker-compose run --rm site bundle config set force_ruby_platform true
+	docker-compose run --rm site bundle config build.ffi "--disable-system-libffi"
 	docker-compose run --rm site bundle install
 
 # Serve the Jekyll site with livereload and incremental builds
@@ -84,7 +85,7 @@ emulate:
 
 # =================== Build / Test / Deploy Commands ==================
 
-# Run all tests that would be run inside the container for the 
+# Run all tests that would be run inside the container for the
 # given target channel on the Github action `test` job.
 # WARNING this can take a while to run!
 # Usage: `make test FLUTTER_TEST_BRANCH=<channel>`
@@ -97,8 +98,8 @@ test:
 stop-tests:
 	docker stop flt-tests
 
-# Allows for firing up a shell with a regular build and 
-# running shell scripts manually to test the build. 
+# Allows for firing up a shell with a regular build and
+# running shell scripts manually to test the build.
 # Usage `make debug-tests`
 debug-tests:
 	DOCKER_BUILDKIT=1 docker build --rm --target flutter -t flt-test .
@@ -106,7 +107,7 @@ debug-tests:
 	docker rmi --name flt-tests -f flt-test
 
 # Build the production site
-# NOTE important to disable tests with the local build as 
+# NOTE important to disable tests with the local build as
 # those will be run on the Github action.
 # Usage: `make build-image`
 build-image:
@@ -126,9 +127,9 @@ build-image-and-check-links:
 debug-build:
 	docker run --rm -it -v ${PWD}:/app ${BUILD_TAG} bash
 
-# Build the production image and copy site build to local. 
-# This will reset and also clean up after finished. 
-# NOTE important to disable tests with the local build as 
+# Build the production image and copy site build to local.
+# This will reset and also clean up after finished.
+# NOTE important to disable tests with the local build as
 # those will be run on the Github action.
 # Usage: `make build`
 build:
@@ -139,9 +140,9 @@ build:
 	docker stop ${BUILD_NAME}
 	docker rmi -f ${BUILD_TAG}
 
-# Deploy the Firebase hosting site from local. 
-# NOTE that if you have a FIREBASE_TOKEN exported or 
-# in your local `.env` file, it will be used. This style 
+# Deploy the Firebase hosting site from local.
+# NOTE that if you have a FIREBASE_TOKEN exported or
+# in your local `.env` file, it will be used. This style
 # is used inside the Github action.
 # Usage: `make deploy`
 deploy:
@@ -163,7 +164,7 @@ else
 		--debug
 endif
 
-# All in one command to stage your build to a Firebase 
+# All in one command to stage your build to a Firebase
 # channel on your currently selected project
 # Usage: `make stage-channel STAGE_NAME=foo`
 stage-channel:
